@@ -153,38 +153,7 @@ title(fig, 'Pensions', 'Ten reforms since 1982. Old-age pensions take about a se
 plt.subplots_adjust(left=.06, right=.985, top=.82, bottom=.11, wspace=.18)
 fig.savefig('out/assets/pensions.png', facecolor=PAPER); plt.close(fig)
 
-# ------------------------------------------------------------------ 6. scatter-plot matrix, 1980 to 2025
-a['debt_change_pts'] = a.public_debt_pct_gdp.diff()
-V = [('gdp_growth_pct', 'GDP growth\n(%)'), ('unemployment_pct', 'Unemployment\n(%)'), ('cpi_inflation_pct', 'Inflation\n(%)'),
-     ('public_balance_pct_gdp', 'Public balance\n(% of GDP)'), ('debt_change_pts', 'Change in debt\n(points of GDP)')]
-d = a.loc[1980:2025].dropna(subset=[v for v, _ in V]).copy()
-DEC = {'1980s': (1980, 1989, INK), '1990s': (1990, 1999, BLUE), '2000s': (2000, 2009, MID), '2010s': (2010, 2019, RED_SOFT), '2020s': (2020, 2029, RED)}
-d['dec'] = [next(k for k, (lo, hi, _) in DEC.items() if lo <= y <= hi) for y in d.index]
-k = len(V)
-fig, axs = plt.subplots(k, k, figsize=(11, 11))
-for i, (vi, li) in enumerate(V):
-    for j, (vj, lj) in enumerate(V):
-        ax = axs[i, j]; x, y = d[vj].astype(float), d[vi].astype(float)
-        if i == j:
-            lo, hi = x.min(), x.max(); pad = (hi - lo) * .06
-            ax.set_xlim(lo - pad, hi + pad); ax.set_ylim(lo - pad, hi + pad)
-            hx = ax.twinx(); hx.set_yticks([]); hx.spines[['top', 'right', 'left']].set_visible(False)
-            e = np.histogram_bin_edges(x, 12)
-            hx.hist([x[d.dec == kk] for kk in DEC], bins=e, color=[c for _, _, c in DEC.values()], stacked=True, edgecolor=PAPER)
-        else:
-            for kk, (_, _, c) in DEC.items():
-                m = d.dec == kk; ax.scatter(x[m], y[m], s=16, c=c, alpha=.9, lw=0)
-            r = np.corrcoef(x, y)[0, 1]; ax.text(.04, .88, f'r = {r:.2f}', transform=ax.transAxes, fontsize=7.5, color=INK)
-        ax.tick_params(labelsize=6.5, length=2)
-        if i < k - 1: ax.set_xticklabels([])
-        if j > 0: ax.set_yticklabels([])
-        if i == k - 1: ax.set_xlabel(lj, fontsize=8)
-        if j == 0: ax.set_ylabel(li, fontsize=8)
-        ax.spines[['top', 'right']].set_visible(False)
-fig.legend(handles=[Line2D([], [], marker='o', ls='', c=c, label=kk) for kk, (_, _, c) in DEC.items()], loc='upper right', bbox_to_anchor=(.98, .935), ncol=5, frameon=False, fontsize=8.5)
-title(fig, 'What moves with what, 1980 to 2025', f'{len(d)} years. Colour: decade. r: Pearson correlation. Deficits and debt jumps follow recessions.', y=.965)
-plt.subplots_adjust(left=.1, right=.98, top=.88, bottom=.08, wspace=.08, hspace=.08)
-fig.savefig('out/assets/scatter_matrix.png', facecolor=PAPER); plt.close(fig)
+# ------------------------------------------------------------------ 6. scatter-plot matrix: made by correlations.py, with r, confidence intervals and p-values
 
 # ------------------------------------------------------------------ 7. debt: who owes it, and the neighbours
 fig, (ax, bx) = plt.subplots(1, 2, figsize=(13, 4.8))
